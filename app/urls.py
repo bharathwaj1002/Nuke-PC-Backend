@@ -11,6 +11,17 @@ urlpatterns = [
     path("get-all-listed-jobs", get_listed_jobs, name="get-all-listed-jobs"),
     path("get-job/<str:id>", get_job, name="get-job"),
     path("submit-application/<str:id>", submit_application, name="submit-application"),
+    
+    
+    # Admin APIs
+    
+    path("dashboard", admin_get_dashboard_params, name="dashboard"),
+    path("jobs", admin_create_job, name="create-job"),
+    path("get-all-applications", admin_get_applications, name="get-all-applications"),
+    path("get-applicant/<str:id>", admin_get_applicant, name="get-applicant"),
+    path("edit-application/<str:id>", admin_edit_application, name="edit-application"),
+    path("edit-job/<str:id>", admin_edit_job, name="edit-job"),
+    path("delete-job/<str:id>", admin_delete_job, name="delete-job"),
 ]
 urlpatterns += [
         re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
