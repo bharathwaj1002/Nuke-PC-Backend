@@ -9,6 +9,7 @@ urlpatterns = [
     path("", index, name="index"),
     path("careers", careers, name="careers"),
     path("get-all-listed-jobs", get_listed_jobs, name="get-all-listed-jobs"),
+    path("get-all-listed-internships", get_listed_internships, name="get-all-listed-internships"),
     path("get-job/<str:id>", get_job, name="get-job"),
     path("submit-application/<str:id>", submit_application, name="submit-application"),
     
@@ -17,7 +18,8 @@ urlpatterns = [
     
     path("dashboard", admin_get_dashboard_params, name="dashboard"),
     path("jobs", admin_create_job, name="create-job"),
-    path("get-all-applications", admin_get_applications, name="get-all-applications"),
+    path("get-job-applications", admin_get_job_applications, name="get-all-applications"),
+    path("get-internship-applications", admin_get_internship_applications, name="get-all-applications"),
     path("get-applicant/<str:id>", admin_get_applicant, name="get-applicant"),
     path("edit-application/<str:id>", admin_edit_application, name="edit-application"),
     path("edit-job/<str:id>", admin_edit_job, name="edit-job"),

@@ -19,7 +19,14 @@ def careers(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_listed_jobs(request):
-    job_listings = JobListing.objects.all()
+    job_listings = JobListing.objects.filter(is_internship=False)
+    serializer = JobListingSerializer(job_listings, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_listed_internships(request):
+    job_listings = JobListing.objects.filter(is_internship=True)
     serializer = JobListingSerializer(job_listings, many=True)
     return Response(serializer.data)
 
@@ -30,37 +37,30 @@ def get_job(request, id):
     serializer = JobListingSerializer(job)
     return Response(serializer.data)
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def submit_application(request, id):
-    # Access the flat structure directly from request.data
     application_data = request.data
     print(application_data)
 
-    # Get the role/job listing
     role = JobListing.objects.get(id=id)
 
-    # Extract the fields directly from the request data
     fullName = application_data.get("fullName")
     email = application_data.get("email")
     mobile = application_data.get("mobile")
     whatsapp = application_data.get("whatsapp")
     dob = f"{application_data.get('dayOfBirth')}/{application_data.get('monthOfBirth')}/{application_data.get('yearOfBirth')}"
     location = application_data.get("location")
-    
-    # Convert 'willingToRelocate' from string to boolean
-    willingToRelocate = application_data.get("willingToRelocate").lower() == 'true'
-    
+    willingToRelocate = application_data.get("willingToRelocate", "").lower() == 'true'
     education = application_data.get("education")
     institution = application_data.get("institution")
     hobbies = application_data.get("hobbies")
     futurePlan = application_data.get("futurePlan")
     fatherOccupation = application_data.get("fatherOccupation")
 
-    # Default fresher status
     isFresher = application_data.get("experience") == "fresher"
 
-    # Experience-related fields (only if not fresher)
     experience_status = None
     experience_description = None
     experience_brief = None
@@ -73,51 +73,41 @@ def submit_application(request, id):
         currentCTC = application_data.get("ctc")
         expectedCTC = application_data.get("expectedSalary")
 
-    # Get the resume file (if any)
     resume = request.FILES.get("resume")
 
+    # ✅ Handle custom fields JSON
+    custom_fields_json = application_data.get("custom_fields")
+    custom_fields = {}
+    if custom_fields_json:
+        try:
+            custom_fields = json.loads(custom_fields_json)
+        except json.JSONDecodeError:
+            return Response({"error": "Invalid JSON in custom_fields"}, status=400)
+
     # Create the job application
-    if isFresher:
-        JobApplication.objects.create(
-            fullName=fullName,
-            email=email,
-            mobile=mobile,
-            whatsapp=whatsapp,
-            dob=dob,
-            location=location,
-            willingToRelocate=willingToRelocate,
-            education=education,
-            institution=institution,
-            hobbies=hobbies,
-            futurePlan=futurePlan,
-            fatherOccupation=fatherOccupation,
-            isFresher=isFresher,
-            role=role,
-            resume=resume
-        )
-    else:
-        JobApplication.objects.create(
-            fullName=fullName,
-            email=email,
-            mobile=mobile,
-            whatsapp=whatsapp,
-            dob=dob,
-            location=location,
-            willingToRelocate=willingToRelocate,
-            education=education,
-            institution=institution,
-            hobbies=hobbies,
-            futurePlan=futurePlan,
-            fatherOccupation=fatherOccupation,
-            isFresher=isFresher,
-            experience_status=experience_status,
-            experience_description=experience_description,
-            experience_brief=experience_brief,
-            currentCTC=currentCTC,
-            expectedCTC=expectedCTC,
-            role=role,
-            resume=resume
-        )
+    application = JobApplication.objects.create(
+        fullName=fullName,
+        email=email,
+        mobile=mobile,
+        whatsapp=whatsapp,
+        dob=dob,
+        location=location,
+        willingToRelocate=willingToRelocate,
+        education=education,
+        institution=institution,
+        hobbies=hobbies,
+        futurePlan=futurePlan,
+        fatherOccupation=fatherOccupation,
+        isFresher=isFresher,
+        experience_status=experience_status,
+        experience_description=experience_description,
+        experience_brief=experience_brief,
+        currentCTC=currentCTC,
+        expectedCTC=expectedCTC,
+        role=role,
+        resume=resume,
+        custom_fields=custom_fields  # ✅ Save parsed JSON here
+    )
 
     return Response({"message": "Job Application successfully submitted."}, status=201)
 
@@ -137,7 +127,8 @@ def admin_get_dashboard_params(request):
 
     # Applications grouped by department
     department_counts = JobApplication.objects.values("role__department").annotate(count=Count("id"))
-    department_counts = [{"department": d["role__department"], "count": d["count"]} for d in department_counts]
+    department_counts = [{"name": d["role__department"], "count": d["count"]} for d in department_counts]
+
 
     # Fresher vs Experienced
     fresher_count = JobApplication.objects.filter(isFresher=True).count()
@@ -171,8 +162,15 @@ def admin_get_listed_jobs(request):
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
-def admin_get_applications(request):
-    applications = JobApplication.objects.all()
+def admin_get_job_applications(request):
+    applications = JobApplication.objects.filter(role__is_internship=False)
+    serializer = JobApplicationSerializer(applications, many=True)
+    return Response(serializer.data)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_get_internship_applications(request):
+    applications = JobApplication.objects.filter(role__is_internship=True)
     serializer = JobApplicationSerializer(applications, many=True)
     return Response(serializer.data)
 

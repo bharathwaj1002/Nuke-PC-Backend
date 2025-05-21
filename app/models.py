@@ -67,6 +67,7 @@ class JobApplication(models.Model):
     status = models.CharField(max_length=100, choices=STATUS_CHOICES, default="Pending")
     resume = models.FileField(upload_to="resume/")
     notes = models.TextField()
+    custom_fields = models.JSONField(blank=True, null=True)
     created_at = models.DateField(auto_now_add=True)
     
     def get_responsibilities(self):
