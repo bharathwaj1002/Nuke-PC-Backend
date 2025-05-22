@@ -42,7 +42,6 @@ def get_job(request, id):
 @permission_classes([AllowAny])
 def submit_application(request, id):
     application_data = request.data
-    print(application_data)
 
     role = JobListing.objects.get(id=id)
 
@@ -247,7 +246,6 @@ def admin_edit_job(request, id):
         data['responsibilities'] = data['responsibilities'].strip()
     if 'requirements' in data:
         data['requirements'] = data['requirements'].strip()
-
     serializer = JobListingSerializer(job_listing, data=data, partial=True)
 
     if serializer.is_valid():
