@@ -21,7 +21,7 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@ec2-18-236-81-83.us-west-2.compute.amazonaws.com << 'EOF'
+          ssh -o StrictHostKeyChecking=no ubuntu@18.236.81.83 << 'EOF'
             git pull origin main
             source venv/bin/activate
             pip install -r requirements.txt
