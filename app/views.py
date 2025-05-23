@@ -208,26 +208,51 @@ def admin_edit_application(request, id):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_create_job(request):
+    print("Incoming data:", request.data)
+    print("Incoming files:", request.FILES)
+
+    # Make mutable copy of data
     data = request.data.copy()
+
+    # Clean text fields
     if 'responsibilities' in data:
         data['responsibilities'] = data['responsibilities'].strip()
     if 'requirements' in data:
         data['requirements'] = data['requirements'].strip()
 
-    # Parse custom_fields JSON
-    custom_fields_raw = data.get('custom_fields', '[]')
+    # Parse custom_fields if it's a JSON string
+    custom_fields_raw = data.get('custom_fields')
     try:
-        data['custom_fields'] = json.loads(custom_fields_raw)
-    except json.JSONDecodeError:
+        if isinstance(custom_fields_raw, str):
+            print("Raw custom_fields string:", custom_fields_raw)
+            data['custom_fields'] = json.loads(custom_fields_raw)
+    except json.JSONDecodeError as e:
+        print("JSON error:", str(e))
         return Response({"custom_fields": "Invalid JSON format"}, status=400)
 
-    serializer = JobListingSerializer(data=data)
+    # Create a standard Python dict for the serializer
+    full_data = dict(data)
+
+    # Convert any single-value lists to raw values
+    for key, value in full_data.items():
+        if isinstance(value, list) and len(value) == 1:
+            full_data[key] = value[0]
+
+    # Add image from request.FILES
+    if 'image' in request.FILES:
+        full_data['image'] = request.FILES['image']
+
+    print("Prepared data for serializer:", full_data)
+
+    serializer = JobListingSerializer(data=full_data)
 
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=201)
     else:
+        print("Serializer errors:", serializer.errors)
         return Response(serializer.errors, status=400)
+
     
 
 
