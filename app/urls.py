@@ -12,6 +12,7 @@ urlpatterns = [
     path("get-all-listed-internships", get_listed_internships, name="get-all-listed-internships"),
     path("get-job/<str:id>", get_job, name="get-job"),
     path("submit-application/<str:id>", submit_application, name="submit-application"),
+    path("get-gallery-images", gallery, name="get-gallery-images"),
     
     
     # Admin APIs

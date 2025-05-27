@@ -289,3 +289,10 @@ def admin_delete_job(request, id):
         return Response({"message": "Job deleted successfully."}, status=204)
     except JobListing.DoesNotExist:
         return Response({"error": "Job not found."}, status=404)
+    
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def gallery(request):
+    images = Gallery.objects.all()
+    serializer = GallerySerializer(images, many=True)
+    return Response(serializer.data)

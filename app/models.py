@@ -78,3 +78,10 @@ class JobApplication(models.Model):
     
     def __str__(self):
         return f"{self.fullName} - {self.role.title}"
+    
+class Gallery(models.Model):
+    image = models.ImageField(upload_to='gallery/')
+    alt = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.alt or f"Image {self.id}"
